@@ -9,8 +9,66 @@ namespace F1ApiBase.Controllers
     [Produces("application/json")]
     public class PilotosController : ControllerBase
     {
-    // Leer atentamente antes de empezar.
-    // Los servicios de la API ya estan hechos, leerlos atentamente y prestarles atencions para llamarlos en los casos que se necesite.
-    // Aplicar Dependency inyection y manejo de errores
+        private readonly IPilotoService _pilotoService;
+
+        public PilotosController(IPilotoService pilotoService)
+        {
+            _pilotoService = pilotoService;
+        }
+
+        // GET: get all para traer todos los objetos que haya (api/Pilotos)
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var pilotos = _pilotoService.GetAllPilotos();
+            return Ok(pilotos);
+        }
+
+        // GET: get para conseguir un objeto particular por id (api/Pilotos/{id})
+        [HttpGet("{id}")]
+        public IActionResult GetById(int id)
+        {
+            var piloto = _pilotoService.GetPilotoById(id);
+            if (piloto == null)
+                return NotFound();
+            return Ok(piloto);
+        }
+
+        // POST: post para agregar un objeto (api/Pilotos)
+        [HttpPost]
+        public IActionResult Create([FromBody] Piloto piloto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var creado = _pilotoService.AddPiloto(piloto);
+            return CreatedAtAction(nameof(GetById), new { id = creado.Id }, creado);
+        }
+
+        // PUT: put para actualizar un objeto (api/Pilotos/{id})
+        [HttpPut("{id}")]
+        public IActionResult Update(int id, [FromBody] Piloto piloto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            piloto.Id = id;
+            var actualizado = _pilotoService.UpdatePiloto(piloto);
+            if (!actualizado)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        // DELETE: delete para borrar un objeto (api/Pilotos/{id})
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var eliminado = _pilotoService.DeletePiloto(id);
+            if (!eliminado)
+                return NotFound();
+
+            return NoContent();
+        }
     }
 }
